@@ -40,7 +40,7 @@ MindTrack was created using prompt-based design, refined iteratively through Lov
 
 1. **Clone this repository:**
    ```bash
-   git clone https://github.com/<your-username>/MindTrack-Wellness-Habit-Tracker.git
+   git clone https://github.com/<Shivshanker869>/mindtrack-personalwellness.git
 Open in Lovable.ai
 
 Visit https://lovable.ai
@@ -49,6 +49,49 @@ Log in → Click “My Projects”
 
 Choose Import Project → Upload your project files or link 
 
+# 🌿 MindTrack – Wellness & Habit Tracker
+
+![MindTrack Banner](assets/images/mindtrack-banner.png)
+
+> _“Track your habits. Nurture your mind. Grow every day with MindTrack.”_  
+> Live demo: [mindtrack-personalwellness.lovable.app](https://mindtrack-personalwellness.lovable.app/)
+
+**MindTrack** is a full-stack AI-powered wellness web application created using **Lovable.ai**. It empowers users to track habits, log moods, set goals, and monitor their mental well-being. The project includes both frontend and backend logic, seamlessly integrated, and runs live.
+
+---
+
+## 💖 Built with Lovable.ai
+
+Lovable.ai enabled me to rapidly build both the user interface and server logic through natural language prompts. I designed the app’s features, UI flow, and integrations entirely via prompt-based workflows.  
+A live deployment of the app is available at [https://mindtrack-personalwellness.lovable.app/](https://mindtrack-personalwellness.lovable.app/).
+
+---
+
+## 🧠 Key Features
+
+- **AI-Powered Habit Suggestions**: Based on user entries, the app suggests relevant wellness habits.  
+- **Daily Mood & Journal Logging**: Users can record their emotional state and thoughts each day.  
+- **Progress Dashboard with Analytics**: View habit streaks, mood trends, and goal completion status.  
+- **Goal Setting & Tracking**: Users can set, edit, and monitor personal wellness goals.  
+- **Google Sheets Integration**: All data is stored and synced with Google Sheets for backup and further analysis.  
+- **Responsive Design**: Works smoothly across desktop, tablet, and mobile devices.
+
+---
+
+## 🛠 Tech Stack
+
+| Layer         | Technology Used                          |
+|---------------|------------------------------------------|
+| Platform      | **Lovable.ai**                           |
+| Frontend      | HTML, CSS, React (or equivalent via Lovable) |
+| Backend       | Serverless functions & integrations (via Lovable) |
+| Database      | Google Sheets (via Lovable integration) |
+| AI Model      | Gemini API / Google AI (via Lovable)     |
+| Version Control | Git & GitHub                            |
+
+---
+
+## 📂 Project Structure
 
 
 
@@ -65,58 +108,7 @@ Choose Import Project → Upload your project files or link
 
 
 
-# Welcome to your Lovable project
 
-## Project info
-
-**URL**: https://mindtrack-personalwellness.lovable.app/
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://mindtrack-personalwellness.lovable.app/) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
 
 This project is built with:
 
