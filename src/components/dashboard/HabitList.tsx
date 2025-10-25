@@ -82,10 +82,62 @@ export const HabitList = ({ userId }: HabitListProps) => {
         if (error) throw error;
         
         setCompletions((prev) => new Set(prev).add(habitId));
-        toast.success("Great work! Keep the streak going! 🔥");
+        
+        // Show motivational message with streak milestone
+        await showStreakReward(habitId);
       }
     } catch (error: any) {
       toast.error(error.message);
+    }
+  };
+
+  const showStreakReward = async (habitId: string) => {
+    // Calculate streak for this specific habit
+    const { data: completionHistory } = await supabase
+      .from("habit_completions")
+      .select("completed_at")
+      .eq("user_id", userId)
+      .eq("habit_id", habitId)
+      .order("completed_at", { ascending: false })
+      .limit(30);
+
+    if (completionHistory && completionHistory.length > 0) {
+      const dates = new Set(
+        completionHistory.map((c) => new Date(c.completed_at).toISOString().split("T")[0])
+      );
+      
+      let streak = 0;
+      let currentDate = new Date();
+      while (true) {
+        const dateStr = currentDate.toISOString().split("T")[0];
+        if (dates.has(dateStr)) {
+          streak++;
+          currentDate.setDate(currentDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+
+      // Show special rewards at milestones
+      if (streak === 1) {
+        toast.success("🎉 Great start! Day 1 complete!");
+      } else if (streak === 3) {
+        toast.success("🔥 3-day streak! You're on fire!");
+      } else if (streak === 7) {
+        toast.success("🌟 Amazing! 1 week streak achieved!");
+      } else if (streak === 14) {
+        toast.success("💎 Incredible! 2 weeks strong!");
+      } else if (streak === 21) {
+        toast.success("👑 Legendary! 3 weeks of consistency!");
+      } else if (streak === 30) {
+        toast.success("🏆 MASTER! 30-day streak! You're unstoppable!");
+      } else if (streak % 50 === 0) {
+        toast.success(`🎊 EPIC! ${streak}-day streak! Phenomenal dedication!`);
+      } else {
+        toast.success(`✅ Great work! ${streak}-day streak! Keep going! 💪`);
+      }
+    } else {
+      toast.success("🎉 Great work! Keep the streak going! 🔥");
     }
   };
 

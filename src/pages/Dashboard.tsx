@@ -6,6 +6,7 @@ import { Header } from "@/components/dashboard/Header";
 import { MoodSelector } from "@/components/dashboard/MoodSelector";
 import { HabitList } from "@/components/dashboard/HabitList";
 import { QuickStats } from "@/components/dashboard/QuickStats";
+import { MotivationalMessage } from "@/components/dashboard/MotivationalMessage";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { AddHabitDialog } from "@/components/dashboard/AddHabitDialog";
@@ -55,6 +56,9 @@ const Dashboard = () => {
       <Header user={user} />
       
       <main className="container mx-auto px-6 py-8 space-y-8">
+        {/* Motivational Message */}
+        <MotivationalMessage />
+
         {/* Mood Tracker */}
         <section className="space-y-4">
           <h2 className="text-2xl font-bold">How are you feeling today?</h2>
