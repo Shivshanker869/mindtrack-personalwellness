@@ -29,13 +29,17 @@ export const ChatBot = () => {
     const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
     
     try {
+      // Send complete conversation history to maintain context
+      const conversationHistory = [...messages, userMessage];
+      console.log('Sending conversation with', conversationHistory.length, 'messages');
+      
       const response = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: [...messages, userMessage] }),
+        body: JSON.stringify({ messages: conversationHistory }),
       });
 
       if (!response.ok) {
@@ -124,10 +128,14 @@ export const ChatBot = () => {
     if (!input.trim() || isLoading) return;
 
     const userMessage: Message = { role: "user", content: input };
+    console.log('User sent message:', input);
+    
+    // Add user message to conversation
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
 
+    // Stream AI response with full conversation context
     await streamChat(userMessage);
     setIsLoading(false);
   };
@@ -173,6 +181,7 @@ export const ChatBot = () => {
                   <div className="text-center text-muted-foreground text-sm py-8">
                     <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
                     <p>Ask me anything about building habits!</p>
+                    <p className="text-xs mt-2">I'll remember our conversation context</p>
                   </div>
                 )}
                 {messages.map((message, index) => (
