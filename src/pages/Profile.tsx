@@ -12,6 +12,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, Save, User as UserIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { z } from "zod";
+
+const profileSchema = z.object({
+  full_name: z.string().trim().max(100, "Name must be less than 100 characters").optional(),
+  contact_number: z.string().trim().max(20, "Contact number must be less than 20 characters").regex(/^[0-9+\-() ]*$/, "Invalid phone number format").optional().or(z.literal("")),
+  age: z.number().int().min(13, "Must be at least 13 years old").max(120, "Invalid age").optional().nullable(),
+  personal_goal: z.string().trim().max(1000, "Goal must be less than 1000 characters").optional(),
+});
 
 const Profile = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -74,6 +82,21 @@ const Profile = () => {
 
     setSaving(true);
     try {
+      // Validate inputs
+      const validationResult = profileSchema.safeParse({
+        full_name: profile.full_name,
+        contact_number: profile.contact_number,
+        age: profile.age ? parseInt(profile.age) : null,
+        personal_goal: profile.personal_goal,
+      });
+
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        toast.error(firstError.message);
+        setSaving(false);
+        return;
+      }
+
       const { error } = await supabase
         .from("profiles")
         .upsert({

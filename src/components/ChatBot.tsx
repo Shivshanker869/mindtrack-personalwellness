@@ -5,6 +5,11 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+const messageSchema = z.object({
+  content: z.string().trim().min(1, "Message cannot be empty").max(2000, "Message must be less than 2000 characters"),
+});
 
 type Message = {
   role: "user" | "assistant";
@@ -31,7 +36,6 @@ export const ChatBot = () => {
     try {
       // Send complete conversation history to maintain context
       const conversationHistory = [...messages, userMessage];
-      console.log('Sending conversation with', conversationHistory.length, 'messages');
       
       const response = await fetch(CHAT_URL, {
         method: "POST",
@@ -125,10 +129,22 @@ export const ChatBot = () => {
   };
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+    if (isLoading) return;
 
-    const userMessage: Message = { role: "user", content: input };
-    console.log('User sent message:', input);
+    const trimmedInput = input.trim();
+    
+    // Validate input
+    const validationResult = messageSchema.safeParse({ content: trimmedInput });
+    if (!validationResult.success) {
+      toast({
+        title: "Invalid message",
+        description: validationResult.error.errors[0].message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const userMessage: Message = { role: "user", content: trimmedInput };
     
     // Add user message to conversation
     setMessages((prev) => [...prev, userMessage]);
