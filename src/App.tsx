@@ -8,8 +8,10 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Calendar from "./pages/Calendar";
 import Analytics from "./pages/Analytics";
+import Timer from "./pages/Timer";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import { ChatBot } from "./components/ChatBot";
 
 const queryClient = new QueryClient();
 
@@ -25,10 +27,12 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/timer" element={<Timer />} />
           <Route path="/profile" element={<Profile />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <ChatBot />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

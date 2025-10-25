@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Heart, Calendar, TrendingUp, User, LogOut } from "lucide-react";
+import { Heart, Calendar, TrendingUp, User, LogOut, Timer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { User as SupabaseUser } from "@supabase/supabase-js";
@@ -46,6 +46,12 @@ export const Header = ({ user }: HeaderProps) => {
               <Button variant="ghost" className="gap-2">
                 <TrendingUp className="h-4 w-4" />
                 Analytics
+              </Button>
+            </Link>
+            <Link to="/timer">
+              <Button variant="ghost" className="gap-2">
+                <Timer className="h-4 w-4" />
+                Timer
               </Button>
             </Link>
             <Link to="/profile">
