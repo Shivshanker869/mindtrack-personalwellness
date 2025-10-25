@@ -23,17 +23,6 @@ MindTrack was created using prompt-based design, refined iteratively through Lov
 
 ---
 
-## 🛠️ Tech Stack
-
-| Category | Technology Used |
-|-----------|-----------------|
-| **Platform** | [Lovable.ai](https://lovable.ai) |
-| **Frontend** | Auto-generated HTML, CSS, React (via Lovable) |
-| **Backend** | Lovable AI Backend (Serverless Functions) |
-| **Database** | Google Sheets (Connected via Lovable Integration) |
-| **AI Model** | Gemini API (Google AI) |
-| **Version Control** | Git & GitHub |
-
 ---
 
 ## 🚀 How to Run Locally
@@ -78,37 +67,31 @@ A live deployment of the app is available at [https://mindtrack-personalwellness
 
 ---
 
-## 🛠 Tech Stack
 
-| Layer         | Technology Used                          |
-|---------------|------------------------------------------|
-| Platform      | **Lovable.ai**                           |
-| Frontend      | HTML, CSS, React (or equivalent via Lovable) |
-| Backend       | Serverless functions & integrations (via Lovable) |
-| Database      | Google Sheets (via Lovable integration) |
-| AI Model      | Gemini API / Google AI (via Lovable)     |
-| Version Control | Git & GitHub                            |
-
----
 
 ## 📂 Project Structure
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+```
+MindTrack-Wellness-Habit-Tracker/
+├── frontend/
+│ ├── index.html
+│ ├── App.jsx
+│ ├── components/
+│ │ ├── HabitCard.jsx
+│ │ └── MoodTracker.jsx
+│ └── styles.css
+├── backend/
+│ ├── api/
+│ │ ├── addHabit.js
+│ │ ├── fetchData.js
+│ │ └── updateGoal.js
+│ └── config/
+│ └── sheetConnection.js
+├── assets/
+│ ├── images/
+│ └── icons/
+├── README.md
+└── .gitignore
+```
 
 This project is built with:
 
