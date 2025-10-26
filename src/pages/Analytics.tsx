@@ -22,6 +22,7 @@ import {
 import { format, subDays, startOfDay } from "date-fns";
 import { TrendingUp, Target, Activity, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { MobileSidebar } from "@/components/MobileSidebar";
 
 const Analytics = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -140,12 +141,13 @@ const Analytics = () => {
 
       <main className="container mx-auto px-4 sm:px-6 py-8 space-y-8">
         <div>
-          <Link to="/dashboard">
-            <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 group">
+          <div className="flex items-center gap-4 mb-4">
+            <MobileSidebar />
+            <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors hidden sm:flex items-center gap-2 group">
               <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
               Back to Dashboard
-            </button>
-          </Link>
+            </Link>
+          </div>
           <h1 className="text-3xl font-bold mb-2">Analytics & Insights</h1>
           <p className="text-muted-foreground">
             Track your progress and understand your habits better

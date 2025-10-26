@@ -56,35 +56,41 @@ const Landing = () => {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 animate-slide-in">
-          <div className="p-8 rounded-2xl bg-card shadow-soft hover:shadow-glow transition-all hover:scale-105">
-            <div className="h-12 w-12 rounded-xl bg-gradient-growth flex items-center justify-center mb-6">
-              <Brain className="h-6 w-6 text-white" />
+          <Link to="/dashboard" className="group">
+            <div className="p-8 rounded-2xl bg-card shadow-soft hover:shadow-glow transition-all hover:scale-105 cursor-pointer">
+              <div className="h-12 w-12 rounded-xl bg-gradient-growth flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Brain className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">Daily Check-ins</h3>
+              <p className="text-muted-foreground">
+                Track your habits and mood daily with simple, beautiful interfaces that keep you motivated.
+              </p>
             </div>
-            <h3 className="text-2xl font-bold mb-3">Daily Check-ins</h3>
-            <p className="text-muted-foreground">
-              Track your habits and mood daily with simple, beautiful interfaces that keep you motivated.
-            </p>
-          </div>
+          </Link>
 
-          <div className="p-8 rounded-2xl bg-card shadow-soft hover:shadow-glow transition-all hover:scale-105">
-            <div className="h-12 w-12 rounded-xl bg-gradient-calm flex items-center justify-center mb-6">
-              <Calendar className="h-6 w-6 text-white" />
+          <Link to="/calendar" className="group">
+            <div className="p-8 rounded-2xl bg-card shadow-soft hover:shadow-glow transition-all hover:scale-105 cursor-pointer">
+              <div className="h-12 w-12 rounded-xl bg-gradient-calm flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Calendar className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">Visual Streaks</h3>
+              <p className="text-muted-foreground">
+                See your progress at a glance with calendar views and streak tracking that celebrate consistency.
+              </p>
             </div>
-            <h3 className="text-2xl font-bold mb-3">Visual Streaks</h3>
-            <p className="text-muted-foreground">
-              See your progress at a glance with calendar views and streak tracking that celebrate consistency.
-            </p>
-          </div>
+          </Link>
 
-          <div className="p-8 rounded-2xl bg-card shadow-soft hover:shadow-glow transition-all hover:scale-105">
-            <div className="h-12 w-12 rounded-xl bg-gradient-energy flex items-center justify-center mb-6">
-              <TrendingUp className="h-6 w-6 text-white" />
+          <Link to="/analytics" className="group">
+            <div className="p-8 rounded-2xl bg-card shadow-soft hover:shadow-glow transition-all hover:scale-105 cursor-pointer">
+              <div className="h-12 w-12 rounded-xl bg-gradient-energy flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <TrendingUp className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">Analytics</h3>
+              <p className="text-muted-foreground">
+                Understand your patterns with beautiful charts and insights about your wellness trends.
+              </p>
             </div>
-            <h3 className="text-2xl font-bold mb-3">Analytics</h3>
-            <p className="text-muted-foreground">
-              Understand your patterns with beautiful charts and insights about your wellness trends.
-            </p>
-          </div>
+          </Link>
         </div>
       </section>
 

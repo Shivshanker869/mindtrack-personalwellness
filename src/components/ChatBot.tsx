@@ -21,6 +21,7 @@ export const ChatBot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -75,7 +76,8 @@ export const ChatBot = () => {
       let textBuffer = "";
       let streamDone = false;
 
-      // Add empty assistant message
+      // Add empty assistant message and show typing indicator
+      setIsTyping(true);
       setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
       while (!streamDone) {
@@ -116,7 +118,9 @@ export const ChatBot = () => {
           }
         }
       }
+      setIsTyping(false);
     } catch (error) {
+      setIsTyping(false);
       console.error("Chat error:", error);
       toast({
         title: "Error",
@@ -218,6 +222,17 @@ export const ChatBot = () => {
                     </div>
                   </div>
                 ))}
+                {isTyping && (
+                  <div className="flex justify-start">
+                    <div className="rounded-lg px-4 py-2 bg-muted">
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></div>
+                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></div>
+                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </ScrollArea>
 

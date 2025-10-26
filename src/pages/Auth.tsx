@@ -1,20 +1,35 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart } from "lucide-react";
+import { Heart, ArrowLeft } from "lucide-react";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Load saved credentials on mount
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("mindtrack_email");
+    const savedPassword = localStorage.getItem("mindtrack_password");
+    const savedRemember = localStorage.getItem("mindtrack_remember");
+    
+    if (savedRemember === "true" && savedEmail && savedPassword) {
+      setEmail(savedEmail);
+      setPassword(savedPassword);
+      setRememberMe(true);
+    }
+  }, []);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -47,6 +62,18 @@ const Auth = () => {
         });
 
         if (error) throw error;
+        
+        // Save credentials if remember me is checked
+        if (rememberMe) {
+          localStorage.setItem("mindtrack_email", email);
+          localStorage.setItem("mindtrack_password", password);
+          localStorage.setItem("mindtrack_remember", "true");
+        } else {
+          localStorage.removeItem("mindtrack_email");
+          localStorage.removeItem("mindtrack_password");
+          localStorage.removeItem("mindtrack_remember");
+        }
+        
         toast.success("Welcome back!");
       } else {
         const { error } = await supabase.auth.signUp({
@@ -72,7 +99,15 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-primary-light via-background to-mindful-light">
-      <Card className="w-full max-w-md shadow-glow">
+      <Link 
+        to="/" 
+        className="fixed top-6 left-6 z-50 flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+      >
+        <ArrowLeft className="h-5 w-5" />
+        <span className="hidden sm:inline">Back</span>
+      </Link>
+      
+      <Card className="w-full max-w-md shadow-glow animate-scale-in">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-growth flex items-center justify-center mb-4">
             <Heart className="h-8 w-8 text-white" />
@@ -125,6 +160,22 @@ const Auth = () => {
                 minLength={6}
               />
             </div>
+
+            {isLogin && (
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="remember"
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                />
+                <Label
+                  htmlFor="remember"
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  Remember my password
+                </Label>
+              </div>
+            )}
 
             <Button
               type="submit"

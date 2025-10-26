@@ -10,6 +10,7 @@ import { MotivationalMessage } from "@/components/dashboard/MotivationalMessage"
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { AddHabitDialog } from "@/components/dashboard/AddHabitDialog";
+import { MobileSidebar } from "@/components/MobileSidebar";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -53,6 +54,9 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
+      <div className="flex items-center gap-2 px-4 sm:px-6 pt-6">
+        <MobileSidebar />
+      </div>
       <Header user={user} />
       
       <main className="container mx-auto px-4 sm:px-6 py-8 space-y-8">

@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Play, Pause, RotateCcw, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import { MobileSidebar } from "@/components/MobileSidebar";
 
 const Timer = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -105,12 +106,13 @@ const Timer = () => {
       <main className="container mx-auto px-4 sm:px-6 py-8">
         <div className="max-w-2xl mx-auto space-y-8">
           <div>
-            <Link to="/dashboard">
-              <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 group">
+            <div className="flex items-center gap-4 mb-4">
+              <MobileSidebar />
+              <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors hidden sm:flex items-center gap-2 group">
                 <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
                 Back to Dashboard
-              </button>
-            </Link>
+              </Link>
+            </div>
           </div>
           <div className="text-center">
             <h1 className="text-4xl font-bold mb-2">Focus Timer</h1>
