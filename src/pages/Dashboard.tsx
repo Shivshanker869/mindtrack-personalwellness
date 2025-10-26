@@ -52,29 +52,33 @@ const Dashboard = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background animate-fade-in">
       <Header user={user} />
       
-      <main className="container mx-auto px-6 py-8 space-y-8">
+      <main className="container mx-auto px-4 sm:px-6 py-8 space-y-8">
         {/* Motivational Message */}
-        <MotivationalMessage />
+        <div className="animate-slide-in">
+          <MotivationalMessage />
+        </div>
 
         {/* Mood Tracker */}
-        <section className="space-y-4">
+        <section className="space-y-4 animate-slide-in">
           <h2 className="text-2xl font-bold">How are you feeling today?</h2>
           <MoodSelector userId={user.id} />
         </section>
 
         {/* Quick Stats */}
-        <QuickStats userId={user.id} />
+        <div className="animate-scale-in">
+          <QuickStats userId={user.id} />
+        </div>
 
         {/* Habits Section */}
-        <section className="space-y-4">
+        <section className="space-y-4 animate-slide-in">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold">Today's Habits</h2>
             <Button
               onClick={() => setShowAddHabit(true)}
-              className="bg-gradient-growth hover:opacity-90"
+              className="bg-gradient-growth hover:opacity-90 hover:scale-105 transition-all"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Habit

@@ -170,7 +170,7 @@ export const ChatBot = () => {
         <Button
           onClick={() => setIsOpen(true)}
           size="lg"
-          className="fixed bottom-6 right-6 rounded-full w-14 h-14 shadow-lg bg-gradient-growth hover:opacity-90 z-50"
+          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 rounded-full w-14 h-14 shadow-lg bg-gradient-growth hover:opacity-90 hover:scale-110 transition-all duration-300 z-50"
         >
           <MessageCircle className="h-6 w-6" />
         </Button>
@@ -178,7 +178,7 @@ export const ChatBot = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-6 right-6 w-96 h-[500px] shadow-2xl z-50 flex flex-col">
+        <Card className="fixed bottom-4 right-4 w-[95vw] sm:w-96 h-[80vh] sm:h-[500px] max-w-[500px] shadow-2xl z-50 flex flex-col animate-scale-in">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 border-b">
             <CardTitle className="text-lg">Habit Assistant</CardTitle>
             <Button

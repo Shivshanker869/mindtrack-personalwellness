@@ -7,6 +7,8 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format, startOfMonth, endOfMonth } from "date-fns";
+import { ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Calendar = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -94,20 +96,26 @@ const Calendar = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background animate-fade-in">
       <Header user={user} />
 
-      <main className="container mx-auto px-6 py-8 space-y-8">
+      <main className="container mx-auto px-4 sm:px-6 py-8 space-y-8">
         <div>
+          <Link to="/dashboard">
+            <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 group">
+              <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+              Back to Dashboard
+            </button>
+          </Link>
           <h1 className="text-3xl font-bold mb-2">Calendar View</h1>
           <p className="text-muted-foreground">
             Track your habit completion history and streaks
           </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
+        <div className="grid gap-6 lg:grid-cols-[2fr,1fr] animate-slide-in">
           {/* Calendar */}
-          <Card className="p-6">
+          <Card className="p-6 hover:shadow-glow transition-shadow">
             <CalendarComponent
               mode="single"
               selected={selectedDate}
@@ -127,7 +135,7 @@ const Calendar = () => {
           </Card>
 
           {/* Selected Day Details */}
-          <Card className="p-6">
+          <Card className="p-6 hover:shadow-glow transition-shadow">
             <h3 className="text-lg font-semibold mb-4">
               {selectedDate ? format(selectedDate, "MMMM d, yyyy") : "Select a date"}
             </h3>

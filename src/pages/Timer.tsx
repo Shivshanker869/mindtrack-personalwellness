@@ -5,8 +5,9 @@ import { User } from "@supabase/supabase-js";
 import { Header } from "@/components/dashboard/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Play, Pause, RotateCcw } from "lucide-react";
+import { Play, Pause, RotateCcw, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 const Timer = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -98,17 +99,25 @@ const Timer = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background animate-fade-in">
       <Header user={user} />
       
-      <main className="container mx-auto px-6 py-8">
+      <main className="container mx-auto px-4 sm:px-6 py-8">
         <div className="max-w-2xl mx-auto space-y-8">
+          <div>
+            <Link to="/dashboard">
+              <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 group">
+                <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+                Back to Dashboard
+              </button>
+            </Link>
+          </div>
           <div className="text-center">
             <h1 className="text-4xl font-bold mb-2">Focus Timer</h1>
             <p className="text-muted-foreground">Stay focused and productive with Pomodoro technique</p>
           </div>
 
-          <Card className="border-2">
+          <Card className="border-2 animate-scale-in hover:shadow-glow transition-shadow">
             <CardHeader>
               <CardTitle>Timer</CardTitle>
               <CardDescription>Select your focus mode</CardDescription>
@@ -147,7 +156,7 @@ const Timer = () => {
                   <Button
                     size="lg"
                     onClick={toggleTimer}
-                    className="bg-gradient-growth hover:opacity-90"
+                    className="bg-gradient-growth hover:opacity-90 hover:scale-105 transition-all"
                   >
                     {isActive ? (
                       <>
@@ -165,6 +174,7 @@ const Timer = () => {
                     size="lg"
                     variant="outline"
                     onClick={resetTimer}
+                    className="hover:scale-105 transition-all"
                   >
                     <RotateCcw className="mr-2 h-5 w-5" />
                     Reset

@@ -20,7 +20,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { format, subDays, startOfDay } from "date-fns";
-import { TrendingUp, Target, Activity } from "lucide-react";
+import { TrendingUp, Target, Activity, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Analytics = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -134,11 +135,17 @@ const Analytics = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background animate-fade-in">
       <Header user={user} />
 
-      <main className="container mx-auto px-6 py-8 space-y-8">
+      <main className="container mx-auto px-4 sm:px-6 py-8 space-y-8">
         <div>
+          <Link to="/dashboard">
+            <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 group">
+              <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+              Back to Dashboard
+            </button>
+          </Link>
           <h1 className="text-3xl font-bold mb-2">Analytics & Insights</h1>
           <p className="text-muted-foreground">
             Track your progress and understand your habits better
@@ -146,8 +153,8 @@ const Analytics = () => {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card className="p-6">
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 animate-slide-in">
+          <Card className="p-6 hover:shadow-glow transition-shadow">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 rounded-xl bg-gradient-growth flex items-center justify-center">
                 <Activity className="h-6 w-6 text-white" />
@@ -160,7 +167,7 @@ const Analytics = () => {
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 hover:shadow-glow transition-shadow">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 rounded-xl bg-gradient-energy flex items-center justify-center">
                 <TrendingUp className="h-6 w-6 text-white" />
@@ -173,7 +180,7 @@ const Analytics = () => {
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 hover:shadow-glow transition-shadow">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 rounded-xl bg-gradient-calm flex items-center justify-center">
                 <Target className="h-6 w-6 text-white" />

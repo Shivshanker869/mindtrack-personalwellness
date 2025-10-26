@@ -9,10 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Save, User as UserIcon } from "lucide-react";
+import { Camera, Save, User as UserIcon, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { z } from "zod";
+import { Link } from "react-router-dom";
 
 const profileSchema = z.object({
   full_name: z.string().trim().max(100, "Name must be less than 100 characters").optional(),
@@ -159,11 +160,17 @@ const Profile = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background animate-fade-in">
       <Header user={user} />
 
-      <main className="container mx-auto px-6 py-8 space-y-8">
+      <main className="container mx-auto px-4 sm:px-6 py-8 space-y-8">
         <div>
+          <Link to="/dashboard">
+            <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 group">
+              <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+              Back to Dashboard
+            </button>
+          </Link>
           <h1 className="text-3xl font-bold mb-2">Profile</h1>
           <p className="text-muted-foreground">
             Manage your personal information and preferences
@@ -176,9 +183,9 @@ const Profile = () => {
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="profile" className="space-y-6">
+          <TabsContent value="profile" className="space-y-6 animate-slide-in">
             {/* Avatar Section */}
-            <Card className="p-6">
+            <Card className="p-6 hover:shadow-glow transition-shadow">
               <div className="flex flex-col items-center gap-4">
                 <div className="relative">
                   <Avatar className="h-32 w-32">
@@ -209,7 +216,7 @@ const Profile = () => {
             </Card>
 
             {/* Profile Details */}
-            <Card className="p-6">
+            <Card className="p-6 hover:shadow-glow transition-shadow">
               <h3 className="text-lg font-semibold mb-6">Personal Information</h3>
               <div className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
@@ -274,7 +281,7 @@ const Profile = () => {
                 <Button
                   onClick={handleSaveProfile}
                   disabled={saving}
-                  className="w-full bg-gradient-growth hover:opacity-90"
+                  className="w-full bg-gradient-growth hover:opacity-90 hover:scale-105 transition-all"
                 >
                   <Save className="h-4 w-4 mr-2" />
                   {saving ? "Saving..." : "Save Changes"}
