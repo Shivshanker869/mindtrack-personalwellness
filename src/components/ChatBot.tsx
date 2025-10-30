@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, X, Send, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
 
 const messageSchema = z.object({
   content: z.string().trim().min(1, "Message cannot be empty").max(2000, "Message must be less than 2000 characters"),
@@ -25,11 +26,88 @@ export const ChatBot = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
+  // Load messages from database when chatbot opens
+  useEffect(() => {
+    if (isOpen) {
+      loadMessages();
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const loadMessages = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      
+      if (data) {
+        setMessages(data.map(msg => ({
+          role: msg.role as "user" | "assistant",
+          content: msg.content
+        })));
+      }
+    } catch (error) {
+      console.error('Error loading messages:', error);
+    }
+  };
+
+  const saveMessage = async (message: Message) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('chat_messages')
+        .insert({
+          user_id: user.id,
+          role: message.role,
+          content: message.content
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error saving message:', error);
+    }
+  };
+
+  const clearChat = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('chat_messages')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setMessages([]);
+      toast({
+        title: "Chat cleared",
+        description: "Conversation history has been deleted.",
+      });
+    } catch (error) {
+      console.error('Error clearing chat:', error);
+      toast({
+        title: "Error",
+        description: "Failed to clear chat history.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const streamChat = async (userMessage: Message) => {
     const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
@@ -119,6 +197,11 @@ export const ChatBot = () => {
         }
       }
       setIsTyping(false);
+      
+      // Save complete assistant message to DB
+      if (assistantMessage) {
+        await saveMessage({ role: "assistant", content: assistantMessage });
+      }
     } catch (error) {
       setIsTyping(false);
       console.error("Chat error:", error);
@@ -150,8 +233,9 @@ export const ChatBot = () => {
 
     const userMessage: Message = { role: "user", content: trimmedInput };
     
-    // Add user message to conversation
+    // Add user message to conversation and save to DB
     setMessages((prev) => [...prev, userMessage]);
+    await saveMessage(userMessage);
     setInput("");
     setIsLoading(true);
 
@@ -185,13 +269,23 @@ export const ChatBot = () => {
         <Card className="fixed bottom-4 right-4 w-[95vw] sm:w-96 h-[80vh] sm:h-[500px] max-w-[500px] shadow-2xl z-50 flex flex-col animate-scale-in">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 border-b">
             <CardTitle className="text-lg">Habit Assistant</CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsOpen(false)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearChat}
+                title="Clear chat history"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsOpen(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </CardHeader>
           
           <CardContent className="flex-1 flex flex-col p-4 gap-4">
