@@ -139,15 +139,19 @@ git clone https://github.com/Shivshanker869/mindtrack-personalwellness.git
 👉 mindtrack-personalwellness.lovable.app
 
 This deployed version connects real-time with the backend and database, allowing users to experience full functionality — from adding habits to tracking emotional progress.
+
 ---
+
 ## 🧩 Future Enhancements
 
-✨ AI Wellness Assistant – Smart chat suggestions for daily motivation.
-🔔 Reminder Notifications – Timely alerts for habits and focus sessions.
-📊 Export Progress Reports – Download wellness data in Excel or PDF format.
-💬 Community Space – Share achievements and inspire others.
-📱 Mobile PWA Version – For seamless usage on smartphones.
+✨ **AI Wellness Assistant – Smart chat suggestions for daily motivation.
+🔔 **Reminder Notifications – Timely alerts for habits and focus sessions.
+📊 **Export Progress Reports – Download wellness data in Excel or PDF format.
+💬 **Community Space – Share achievements and inspire others.
+📱 **Mobile PWA Version – For seamless usage on smartphones.
+
 ---
+
 ## 🏁 Deployment Guide
 
 To publish using Lovable:
@@ -157,7 +161,9 @@ Open the project in Lovable.ai
 Click on Share → Publish
 
 Get your live link instantly
+
 ---
+
 ## 🌐 Custom Domain Setup
 
 You can connect a personal domain:
@@ -169,13 +175,16 @@ Click Connect Domain
 Add your DNS record as guided by Lovable
 
 📖 Official Guide: Setting up a custom domain
+
 ---
 ## 🧠 Created & Presented By
 
 👨‍💻 Team Name: TestRide Team
 
 🧑‍🏫 Submitted To: Ma’am Ritu Bahaguna
+
 ---
+
 | Team Member               | Role                       |
 | ------------------------- | -------------------------- |
 | **Shiv Shanker Gupta**    | Developer & AI Integration |
@@ -183,6 +192,7 @@ Add your DNS record as guided by Lovable
 | **A. Mahesh Reddy Avula** | Testing & Documentation    |
 
 ---
+
 ## ⭐ Project Motto
 
 “MindTrack isn’t just an app — it’s your digital companion for mindfulness and growth.” 🌱
