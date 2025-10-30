@@ -145,9 +145,13 @@ This deployed version connects real-time with the backend and database, allowing
 ## 🧩 Future Enhancements
 
 ✨ **AI Wellness Assistant** – Smart chat suggestions for daily motivation.
+
 🔔 **Reminder Notifications** – Timely alerts for habits and focus sessions.
+
 📊 **Export Progress Reports** – Download wellness data in Excel or PDF format.
+
 💬 **Community Space** – Share achievements and inspire others.
+
 📱 **Mobile PWA Version** – For seamless usage on smartphones.
 
 ---
