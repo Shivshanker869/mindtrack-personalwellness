@@ -98,9 +98,29 @@ MindTrack-Wellness-Habit-Tracker/
 ├── tsconfig.node.json             # Node environment config
 └── vite.config.ts                 # Vite build configuration
 ```
+## 💡 Explanation of Key Folders
+| Folder/File          | Description                                                                           |
+| -------------------- | ------------------------------------------------------------------------------------- |
+| `public/`            | Contains static assets that don’t need processing (icons, logos, etc).                |
+| `src/`               | All core logic and UI code lives here — main app logic, components, hooks, utilities. |
+| `components/`        | Modular reusable UI parts like cards, timers, calendars, etc.                         |
+| `pages/`             | Page-level views connected to routes (Home, Dashboard, Login).                        |
+| `supabase/`          | Database, authentication, and backend logic (Lovable auto-generated).                 |
+| `.env`               | Stores API keys or private URLs securely (not pushed to GitHub).                      |
+| `tailwind.config.ts` | Custom Tailwind CSS styling setup.                                                    |
+| `vite.config.ts`     | Vite setup for faster development build.                                              |
 
 ---
-
+## ⚙️ Tech Stack Used
+| Category            | Technology                               |
+| ------------------- | ---------------------------------------- |
+| **Frontend**        | React + TypeScript + Tailwind CSS        |
+| **Backend**         | Supabase (integrated through Lovable.ai) |
+| **Build Tool**      | Vite                                     |
+| **Package Manager** | Bun                                      |
+| **AI Builder**      | Lovable.ai                               |
+| **Version Control** | Git + GitHub                             |
+---
 ## 🚀 How to Run Locally
 
 ```bash
