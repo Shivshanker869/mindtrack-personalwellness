@@ -10,6 +10,7 @@ import Calendar from "./pages/Calendar";
 import Analytics from "./pages/Analytics";
 import Timer from "./pages/Timer";
 import Profile from "./pages/Profile";
+import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 import { ChatBot } from "./components/ChatBot";
 
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/timer" element={<Timer />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

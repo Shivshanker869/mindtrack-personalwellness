@@ -1,9 +1,44 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Brain, Calendar, TrendingUp, Heart } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { ArrowRight, Brain, Calendar, TrendingUp, Heart, Trophy, Star, Medal } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ThemeToggle } from "@/components/dashboard/ThemeToggle";
+import { supabase } from "@/integrations/supabase/client";
+
+interface LeaderboardEntry {
+  user_id: string;
+  stars: number;
+  rank: string;
+  current_streak: number;
+}
 
 const Landing = () => {
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+
+  useEffect(() => {
+    fetchLeaderboard();
+  }, []);
+
+  const fetchLeaderboard = async () => {
+    const { data, error } = await supabase
+      .from('user_achievements')
+      .select('user_id, stars, rank, current_streak')
+      .order('stars', { ascending: false })
+      .limit(5);
+
+    if (!error && data) {
+      setLeaderboard(data);
+    }
+  };
+
+  const getMedalIcon = (index: number) => {
+    if (index === 0) return <Medal className="h-5 w-5 text-yellow-500" />;
+    if (index === 1) return <Medal className="h-5 w-5 text-gray-400" />;
+    if (index === 2) return <Medal className="h-5 w-5 text-amber-700" />;
+    return <span className="text-muted-foreground">#{index + 1}</span>;
+  };
+
   return (
     <div className="min-h-screen bg-background animate-fade-in">
       {/* Theme Toggle */}
@@ -96,6 +131,67 @@ const Landing = () => {
               </p>
             </div>
           </Link>
+        </div>
+      </section>
+
+      {/* Weekly Leaderboard Section */}
+      <section className="container mx-auto px-4 sm:px-6 py-20">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Trophy className="h-8 w-8 text-primary" />
+              <h2 className="text-3xl md:text-4xl font-bold">
+                Weekly Leaderboard
+              </h2>
+            </div>
+            <p className="text-xl text-muted-foreground">
+              Top performers this week
+            </p>
+          </div>
+
+          <Card className="p-6 shadow-glow animate-fade-in">
+            {leaderboard.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No leaderboard data yet. Start tracking your habits to compete!
+              </div>
+            ) : (
+              <div className="space-y-3 mb-6">
+                {leaderboard.map((entry, index) => (
+                  <div
+                    key={entry.user_id}
+                    className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
+                      index < 3 ? "bg-primary/10" : "bg-secondary/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 flex justify-center">
+                        {getMedalIcon(index)}
+                      </div>
+                      <div>
+                        <p className="font-medium">User {entry.user_id.slice(0, 8)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {entry.rank} • {entry.current_streak} day streak
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                      <span className="font-bold">{entry.stars}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            <div className="text-center">
+              <Link to="/leaderboard">
+                <Button variant="outline" className="gap-2">
+                  View Full Leaderboard
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          </Card>
         </div>
       </section>
 
