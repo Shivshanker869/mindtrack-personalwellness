@@ -172,6 +172,66 @@ export type Database = {
         }
         Relationships: []
       }
+      user_achievements: {
+        Row: {
+          created_at: string
+          current_streak: number
+          id: string
+          longest_streak: number
+          rank: string
+          stars: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          longest_streak?: number
+          rank?: string
+          stars?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          longest_streak?: number
+          rank?: string
+          stars?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      water_intake: {
+        Row: {
+          created_at: string
+          date: string
+          glasses_count: number
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          glasses_count?: number
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          glasses_count?: number
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

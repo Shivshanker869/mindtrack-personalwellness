@@ -11,6 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { AddHabitDialog } from "@/components/dashboard/AddHabitDialog";
 import { MobileSidebar } from "@/components/MobileSidebar";
+import { WaterIntakeTracker } from "@/components/dashboard/WaterIntakeTracker";
+import { ThemeToggle } from "@/components/dashboard/ThemeToggle";
+import { AchievementRank } from "@/components/dashboard/AchievementRank";
+import { WeeklyLeaderboard } from "@/components/dashboard/WeeklyLeaderboard";
+import { StreakDisplay } from "@/components/dashboard/StreakDisplay";
+import { ExportReport } from "@/components/dashboard/ExportReport";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -54,8 +60,9 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      <div className="flex items-center gap-2 px-4 sm:px-6 pt-6">
+      <div className="flex items-center justify-between gap-2 px-4 sm:px-6 pt-6">
         <MobileSidebar />
+        <ThemeToggle />
       </div>
       <Header user={user} />
       
@@ -76,6 +83,22 @@ const Dashboard = () => {
           <QuickStats userId={user.id} />
         </div>
 
+        {/* Streaks Display */}
+        <div className="animate-slide-in">
+          <StreakDisplay userId={user.id} />
+        </div>
+
+        {/* Water Intake & Achievement Rank */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-slide-in">
+          <WaterIntakeTracker userId={user.id} />
+          <AchievementRank userId={user.id} />
+        </div>
+
+        {/* Weekly Leaderboard */}
+        <div className="animate-scale-in">
+          <WeeklyLeaderboard />
+        </div>
+
         {/* Habits Section */}
         <section className="space-y-4 animate-slide-in">
           <div className="flex items-center justify-between">
@@ -91,6 +114,11 @@ const Dashboard = () => {
           
           <HabitList userId={user.id} />
         </section>
+
+        {/* Export Report */}
+        <div className="animate-fade-in">
+          <ExportReport userId={user.id} />
+        </div>
       </main>
 
       <AddHabitDialog
