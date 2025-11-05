@@ -4,6 +4,7 @@ import { Heart, Calendar, TrendingUp, User, LogOut, Timer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { User as SupabaseUser } from "@supabase/supabase-js";
+import { NotificationBell } from "@/components/NotificationBell";
 
 interface HeaderProps {
   user: SupabaseUser;
@@ -29,7 +30,7 @@ export const Header = ({ user }: HeaderProps) => {
             <span className="text-xl font-bold">MindTrack</span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-2">
             <Link to="/dashboard">
               <Button variant="ghost" className="gap-2">
                 <Heart className="h-4 w-4" />
@@ -60,6 +61,7 @@ export const Header = ({ user }: HeaderProps) => {
                 Profile
               </Button>
             </Link>
+            <NotificationBell />
             <Button
               variant="ghost"
               onClick={handleSignOut}
@@ -70,7 +72,8 @@ export const Header = ({ user }: HeaderProps) => {
             </Button>
           </nav>
 
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            <NotificationBell />
             <Button variant="ghost" size="icon" onClick={handleSignOut}>
               <LogOut className="h-5 w-5" />
             </Button>

@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { ArrowRight, Brain, Calendar, TrendingUp, Heart, Trophy, Star, Medal } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ThemeToggle } from "@/components/dashboard/ThemeToggle";
+import { NotificationBell } from "@/components/NotificationBell";
 import { supabase } from "@/integrations/supabase/client";
 
 interface LeaderboardEntry {
@@ -41,8 +42,9 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      {/* Theme Toggle */}
-      <div className="absolute top-6 right-6 z-50">
+      {/* Header with Theme Toggle and Notifications */}
+      <div className="absolute top-6 right-6 z-50 flex items-center gap-2">
+        <NotificationBell />
         <ThemeToggle />
       </div>
       {/* Hero Section */}
