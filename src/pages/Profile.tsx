@@ -15,12 +15,33 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { z } from "zod";
 import { Link } from "react-router-dom";
 import { MobileSidebar } from "@/components/MobileSidebar";
+import { Switch } from "@/components/ui/switch";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const profileSchema = z.object({
   full_name: z.string().trim().max(100, "Name must be less than 100 characters").optional(),
   contact_number: z.string().trim().max(20, "Contact number must be less than 20 characters").regex(/^[0-9+\-() ]*$/, "Invalid phone number format").optional().or(z.literal("")),
   age: z.number().int().min(13, "Must be at least 13 years old").max(120, "Invalid age").optional().nullable(),
   personal_goal: z.string().trim().max(1000, "Goal must be less than 1000 characters").optional(),
+});
+
+const passwordSchema = z.object({
+  currentPassword: z.string().min(6, "Password must be at least 6 characters"),
+  newPassword: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 const Profile = () => {
@@ -33,7 +54,17 @@ const Profile = () => {
     age: "",
     personal_goal: "",
     avatar_url: "",
+    email_daily_reminder: true,
+    email_weekly_summary: true,
+    email_streak_achievements: true,
   });
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -75,6 +106,9 @@ const Profile = () => {
         age: data.age?.toString() || "",
         personal_goal: data.personal_goal || "",
         avatar_url: data.avatar_url || "",
+        email_daily_reminder: data.email_daily_reminder ?? true,
+        email_weekly_summary: data.email_weekly_summary ?? true,
+        email_streak_achievements: data.email_streak_achievements ?? true,
       });
     }
   };
@@ -108,6 +142,9 @@ const Profile = () => {
           age: profile.age ? parseInt(profile.age) : null,
           personal_goal: profile.personal_goal,
           avatar_url: profile.avatar_url,
+          email_daily_reminder: profile.email_daily_reminder,
+          email_weekly_summary: profile.email_weekly_summary,
+          email_streak_achievements: profile.email_streak_achievements,
           updated_at: new Date().toISOString(),
         });
 
@@ -176,6 +213,65 @@ const Profile = () => {
     } catch (error: any) {
       toast.dismiss();
       toast.error(error.message || "Failed to upload avatar");
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!user) return;
+
+    setChangingPassword(true);
+    try {
+      const validationResult = passwordSchema.safeParse(passwordData);
+
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        toast.error(firstError.message);
+        setChangingPassword(false);
+        return;
+      }
+
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword,
+      });
+
+      if (error) throw error;
+
+      toast.success("Password updated successfully!");
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update password");
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+
+    setDeletingAccount(true);
+    try {
+      // Delete all user data from profiles, habits, completions, etc.
+      // The foreign key cascades will handle related data
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
+
+      // Sign out the user
+      await supabase.auth.signOut();
+      
+      toast.success("Account deleted successfully. Goodbye!");
+      navigate("/");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete account");
+    } finally {
+      setDeletingAccount(false);
     }
   };
 
@@ -333,38 +429,164 @@ const Profile = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="settings" className="space-y-6">
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-6">Account Settings</h3>
+          <TabsContent value="settings" className="space-y-6 animate-slide-in">
+            {/* Email Notifications */}
+            <Card className="p-6 hover:shadow-glow transition-shadow">
+              <h3 className="text-lg font-semibold mb-6">Email Notifications</h3>
               <div className="space-y-4">
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium mb-2">Email Notifications</h4>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Receive reminders and updates about your habits
-                  </p>
-                  <Button variant="outline" disabled>
-                    Coming Soon
-                  </Button>
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex-1">
+                    <h4 className="font-medium mb-1">Daily Habit Reminders</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Receive daily reminders to complete your habits
+                    </p>
+                  </div>
+                  <Switch
+                    checked={profile.email_daily_reminder}
+                    onCheckedChange={(checked) =>
+                      setProfile({ ...profile, email_daily_reminder: checked })
+                    }
+                  />
                 </div>
 
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium mb-2">Change Password</h4>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Update your password to keep your account secure
-                  </p>
-                  <Button variant="outline" disabled>
-                    Coming Soon
-                  </Button>
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex-1">
+                    <h4 className="font-medium mb-1">Weekly Progress Summary</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Get a weekly overview of your progress
+                    </p>
+                  </div>
+                  <Switch
+                    checked={profile.email_weekly_summary}
+                    onCheckedChange={(checked) =>
+                      setProfile({ ...profile, email_weekly_summary: checked })
+                    }
+                  />
                 </div>
 
-                <div className="p-4 border rounded-lg border-destructive/50">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex-1">
+                    <h4 className="font-medium mb-1">Streak Achievement Notifications</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Celebrate your streak milestones
+                    </p>
+                  </div>
+                  <Switch
+                    checked={profile.email_streak_achievements}
+                    onCheckedChange={(checked) =>
+                      setProfile({ ...profile, email_streak_achievements: checked })
+                    }
+                  />
+                </div>
+
+                <Button
+                  onClick={handleSaveProfile}
+                  disabled={saving}
+                  className="w-full bg-gradient-growth hover:opacity-90 hover:scale-105 transition-all"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {saving ? "Saving..." : "Save Notification Preferences"}
+                </Button>
+              </div>
+            </Card>
+
+            {/* Change Password */}
+            <Card className="p-6 hover:shadow-glow transition-shadow">
+              <h3 className="text-lg font-semibold mb-6">Change Password</h3>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="currentPassword">Current Password</Label>
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    value={passwordData.currentPassword}
+                    onChange={(e) =>
+                      setPasswordData({ ...passwordData, currentPassword: e.target.value })
+                    }
+                    placeholder="Enter current password"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={passwordData.newPassword}
+                    onChange={(e) =>
+                      setPasswordData({ ...passwordData, newPassword: e.target.value })
+                    }
+                    placeholder="Enter new password (min 6 characters)"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={passwordData.confirmPassword}
+                    onChange={(e) =>
+                      setPasswordData({ ...passwordData, confirmPassword: e.target.value })
+                    }
+                    placeholder="Confirm new password"
+                  />
+                </div>
+
+                <Button
+                  onClick={handleChangePassword}
+                  disabled={changingPassword}
+                  className="w-full bg-gradient-growth hover:opacity-90 hover:scale-105 transition-all"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {changingPassword ? "Updating..." : "Update Password"}
+                </Button>
+              </div>
+            </Card>
+
+            {/* Delete Account */}
+            <Card className="p-6 border-destructive/50 hover:shadow-glow transition-shadow">
+              <h3 className="text-lg font-semibold mb-6 text-destructive">Danger Zone</h3>
+              <div className="space-y-4">
+                <div className="p-4 border border-destructive/50 rounded-lg">
                   <h4 className="font-medium mb-2 text-destructive">Delete Account</h4>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Permanently delete your account and all data
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Permanently delete your account and all associated data. This action cannot be undone.
                   </p>
-                  <Button variant="destructive" disabled>
-                    Coming Soon
-                  </Button>
+                  
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" disabled={deletingAccount}>
+                        {deletingAccount ? "Deleting..." : "Delete Account"}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete your account and all associated data including:
+                          <ul className="list-disc list-inside mt-2 space-y-1">
+                            <li>All your habits and completions</li>
+                            <li>Your profile information</li>
+                            <li>Achievement history and streaks</li>
+                            <li>Mood tracking data</li>
+                          </ul>
+                          <p className="mt-3 font-semibold text-destructive">
+                            This action cannot be undone.
+                          </p>
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteAccount}
+                          className="bg-destructive hover:bg-destructive/90"
+                        >
+                          Yes, Delete My Account
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             </Card>

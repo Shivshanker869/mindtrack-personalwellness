@@ -146,6 +146,9 @@ export type Database = {
           contact_number: string | null
           created_at: string
           display_name: string | null
+          email_daily_reminder: boolean | null
+          email_streak_achievements: boolean | null
+          email_weekly_summary: boolean | null
           full_name: string | null
           id: string
           personal_goal: string | null
@@ -157,6 +160,9 @@ export type Database = {
           contact_number?: string | null
           created_at?: string
           display_name?: string | null
+          email_daily_reminder?: boolean | null
+          email_streak_achievements?: boolean | null
+          email_weekly_summary?: boolean | null
           full_name?: string | null
           id: string
           personal_goal?: string | null
@@ -168,6 +174,9 @@ export type Database = {
           contact_number?: string | null
           created_at?: string
           display_name?: string | null
+          email_daily_reminder?: boolean | null
+          email_streak_achievements?: boolean | null
+          email_weekly_summary?: boolean | null
           full_name?: string | null
           id?: string
           personal_goal?: string | null
