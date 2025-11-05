@@ -145,6 +145,7 @@ export type Database = {
           avatar_url: string | null
           contact_number: string | null
           created_at: string
+          display_name: string | null
           full_name: string | null
           id: string
           personal_goal: string | null
@@ -155,6 +156,7 @@ export type Database = {
           avatar_url?: string | null
           contact_number?: string | null
           created_at?: string
+          display_name?: string | null
           full_name?: string | null
           id: string
           personal_goal?: string | null
@@ -165,6 +167,7 @@ export type Database = {
           avatar_url?: string | null
           contact_number?: string | null
           created_at?: string
+          display_name?: string | null
           full_name?: string | null
           id?: string
           personal_goal?: string | null
@@ -176,6 +179,7 @@ export type Database = {
         Row: {
           created_at: string
           current_streak: number
+          display_name: string | null
           id: string
           longest_streak: number
           rank: string
@@ -186,6 +190,7 @@ export type Database = {
         Insert: {
           created_at?: string
           current_streak?: number
+          display_name?: string | null
           id?: string
           longest_streak?: number
           rank?: string
@@ -196,6 +201,7 @@ export type Database = {
         Update: {
           created_at?: string
           current_streak?: number
+          display_name?: string | null
           id?: string
           longest_streak?: number
           rank?: string

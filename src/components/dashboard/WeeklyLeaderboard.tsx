@@ -8,6 +8,7 @@ interface LeaderboardEntry {
   stars: number;
   rank: string;
   current_streak: number;
+  display_name: string | null;
 }
 
 export const WeeklyLeaderboard = () => {
@@ -20,7 +21,7 @@ export const WeeklyLeaderboard = () => {
   const fetchLeaderboard = async () => {
     const { data, error } = await supabase
       .from('user_achievements')
-      .select('user_id, stars, rank, current_streak')
+      .select('user_id, stars, rank, current_streak, display_name')
       .order('stars', { ascending: false })
       .limit(10);
 
@@ -56,7 +57,7 @@ export const WeeklyLeaderboard = () => {
                 {getMedalIcon(index)}
               </div>
               <div>
-                <p className="font-medium">User {entry.user_id.slice(0, 8)}</p>
+                <p className="font-medium">{entry.display_name || "Anonymous User"}</p>
                 <p className="text-xs text-muted-foreground">
                   {entry.rank} • {entry.current_streak} day streak
                 </p>

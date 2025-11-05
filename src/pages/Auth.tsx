@@ -4,32 +4,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Heart, ArrowLeft } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { z } from "zod";
+
+// Input validation schemas
+const emailSchema = z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters");
+const passwordSchema = z.string().min(6, "Password must be at least 6 characters").max(72, "Password must be less than 72 characters");
+const nameSchema = z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters");
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Load saved credentials on mount
+  // Clear any legacy stored passwords on mount (security migration)
   useEffect(() => {
-    const savedEmail = localStorage.getItem("mindtrack_email");
-    const savedPassword = localStorage.getItem("mindtrack_password");
-    const savedRemember = localStorage.getItem("mindtrack_remember");
-    
-    if (savedRemember === "true" && savedEmail && savedPassword) {
-      setEmail(savedEmail);
-      setPassword(savedPassword);
-      setRememberMe(true);
-    }
+    localStorage.removeItem("mindtrack_password");
+    localStorage.removeItem("mindtrack_email");
+    localStorage.removeItem("mindtrack_remember");
   }, []);
 
   useEffect(() => {
@@ -72,30 +70,42 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // Validate inputs
+      const emailValidation = emailSchema.safeParse(email);
+      if (!emailValidation.success) {
+        toast.error(emailValidation.error.errors[0].message);
+        setLoading(false);
+        return;
+      }
+
+      const passwordValidation = passwordSchema.safeParse(password);
+      if (!passwordValidation.success) {
+        toast.error(passwordValidation.error.errors[0].message);
+        setLoading(false);
+        return;
+      }
+
+      if (!isLogin) {
+        const nameValidation = nameSchema.safeParse(fullName);
+        if (!nameValidation.success) {
+          toast.error(nameValidation.error.errors[0].message);
+          setLoading(false);
+          return;
+        }
+      }
+
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
+          email: emailValidation.data,
+          password: passwordValidation.data,
         });
 
         if (error) throw error;
-        
-        // Save credentials if remember me is checked
-        if (rememberMe) {
-          localStorage.setItem("mindtrack_email", email);
-          localStorage.setItem("mindtrack_password", password);
-          localStorage.setItem("mindtrack_remember", "true");
-        } else {
-          localStorage.removeItem("mindtrack_email");
-          localStorage.removeItem("mindtrack_password");
-          localStorage.removeItem("mindtrack_remember");
-        }
-        
         toast.success("Welcome back!");
       } else {
         const { error } = await supabase.auth.signUp({
-          email,
-          password,
+          email: emailValidation.data,
+          password: passwordValidation.data,
           options: {
             data: {
               full_name: fullName,
@@ -178,21 +188,6 @@ const Auth = () => {
               />
             </div>
 
-            {isLogin && (
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="remember"
-                  checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                />
-                <Label
-                  htmlFor="remember"
-                  className="text-sm font-normal cursor-pointer"
-                >
-                  Remember my password
-                </Label>
-              </div>
-            )}
 
             <Button
               type="submit"

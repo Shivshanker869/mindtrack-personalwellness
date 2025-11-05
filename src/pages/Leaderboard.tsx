@@ -11,6 +11,7 @@ interface LeaderboardEntry {
   stars: number;
   rank: string;
   current_streak: number;
+  display_name: string | null;
 }
 
 const Leaderboard = () => {
@@ -25,7 +26,7 @@ const Leaderboard = () => {
   const fetchLeaderboard = async () => {
     const { data, error } = await supabase
       .from('user_achievements')
-      .select('user_id, stars, rank, current_streak')
+      .select('user_id, stars, rank, current_streak, display_name')
       .order('stars', { ascending: false })
       .limit(50);
 
@@ -115,7 +116,7 @@ const Leaderboard = () => {
                       </div>
                       <div>
                         <p className="font-bold text-lg">
-                          User {entry.user_id.slice(0, 8)}
+                          {entry.display_name || "Anonymous User"}
                         </p>
                         <div className="flex items-center gap-3 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
