@@ -1,9 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Rate limiting: 20 requests per minute per user
+const RATE_LIMIT = 20;
+const RATE_WINDOW_MINUTES = 1;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -11,6 +16,78 @@ serve(async (req) => {
   }
 
   try {
+    // Get user ID from JWT token
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Initialize Supabase client for rate limiting
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Verify JWT and get user ID
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Check rate limit
+    const windowStart = new Date();
+    windowStart.setMinutes(windowStart.getMinutes() - RATE_WINDOW_MINUTES);
+
+    const { data: rateLimitData, error: rateLimitError } = await supabase
+      .from("chat_rate_limits")
+      .select("request_count")
+      .eq("user_id", user.id)
+      .gte("window_start", windowStart.toISOString())
+      .maybeSingle();
+
+    if (rateLimitError) {
+      console.error("Rate limit check error:", rateLimitError);
+    }
+
+    const currentCount = rateLimitData?.request_count || 0;
+
+    if (currentCount >= RATE_LIMIT) {
+      console.log(`Rate limit exceeded for user ${user.id}: ${currentCount} requests`);
+      return new Response(
+        JSON.stringify({ error: `Rate limit exceeded. Maximum ${RATE_LIMIT} requests per minute. Please try again later.` }),
+        {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
+        }
+      );
+    }
+
+    // Update or insert rate limit record
+    if (rateLimitData) {
+      await supabase
+        .from("chat_rate_limits")
+        .update({ request_count: currentCount + 1 })
+        .eq("user_id", user.id)
+        .gte("window_start", windowStart.toISOString());
+    } else {
+      // Clean up old records periodically
+      await supabase.rpc("clean_old_rate_limits");
+      
+      // Insert new rate limit record
+      await supabase
+        .from("chat_rate_limits")
+        .insert({ user_id: user.id, request_count: 1, window_start: new Date().toISOString() });
+    }
+
+    console.log(`Processing chat request for user ${user.id} (${currentCount + 1}/${RATE_LIMIT} requests)`);
+
     const { messages } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     

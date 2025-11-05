@@ -38,6 +38,30 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_rate_limits: {
+        Row: {
+          created_at: string
+          id: string
+          request_count: number
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          request_count?: number
+          user_id: string
+          window_start?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          request_count?: number
+          user_id?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       habit_completions: {
         Row: {
           completed_at: string
@@ -252,7 +276,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      clean_old_rate_limits: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
