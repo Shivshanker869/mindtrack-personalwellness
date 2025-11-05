@@ -125,16 +125,57 @@ const Profile = () => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
+    // Validate file size (max 2MB)
+    const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+    if (file.size > maxSize) {
+      toast.error("Image size must be less than 2MB");
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
     try {
-      // For now, we'll use a simple base64 conversion since storage bucket isn't set up
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfile({ ...profile, avatar_url: reader.result as string });
-        toast.success("Avatar uploaded! Click Save to update.");
-      };
-      reader.readAsDataURL(file);
+      toast.loading("Uploading avatar...");
+
+      // Delete old avatar if exists
+      if (profile.avatar_url) {
+        const oldPath = profile.avatar_url.split('/').pop();
+        if (oldPath && !oldPath.startsWith('data:')) {
+          await supabase.storage
+            .from('avatars')
+            .remove([`${user.id}/${oldPath}`]);
+        }
+      }
+
+      // Upload to storage bucket
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      setProfile({ ...profile, avatar_url: publicUrl });
+      toast.dismiss();
+      toast.success("Avatar uploaded! Click Save to update.");
     } catch (error: any) {
-      toast.error("Failed to upload avatar");
+      toast.dismiss();
+      toast.error(error.message || "Failed to upload avatar");
     }
   };
 
