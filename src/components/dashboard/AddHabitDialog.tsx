@@ -26,6 +26,8 @@ const categories = [
   { name: "Productivity", color: "#f59e0b", icon: "⚡" },
   { name: "Social", color: "#ec4899", icon: "👥" },
   { name: "Creative", color: "#f97316", icon: "🎨" },
+  { name: "Eating", color: "#ef4444", icon: "🍎" },
+  { name: "Water Intake Habits", color: "#06b6d4", icon: "💧" },
 ];
 
 export const AddHabitDialog = ({ open, onOpenChange, userId }: AddHabitDialogProps) => {
