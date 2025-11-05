@@ -230,6 +230,26 @@ const Profile = () => {
         return;
       }
 
+      // First verify current password by re-authenticating
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser?.email) {
+        toast.error("Unable to verify user");
+        setChangingPassword(false);
+        return;
+      }
+
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email: currentUser.email,
+        password: passwordData.currentPassword,
+      });
+
+      if (verifyError) {
+        toast.error("Current password is incorrect");
+        setChangingPassword(false);
+        return;
+      }
+
+      // Only then update to new password
       const { error } = await supabase.auth.updateUser({
         password: passwordData.newPassword,
       });
@@ -254,14 +274,10 @@ const Profile = () => {
 
     setDeletingAccount(true);
     try {
-      // Delete all user data from profiles, habits, completions, etc.
-      // The foreign key cascades will handle related data
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', user.id);
+      // Call edge function to completely delete all user data
+      const { error: deleteError } = await supabase.functions.invoke('delete-account');
 
-      if (profileError) throw profileError;
+      if (deleteError) throw deleteError;
 
       // Sign out the user
       await supabase.auth.signOut();
