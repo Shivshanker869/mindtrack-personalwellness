@@ -6,29 +6,44 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, ArrowLeft } from "lucide-react";
+import { Heart, ArrowLeft, Mail, Phone } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { z } from "zod";
 
 // Input validation schemas
 const emailSchema = z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters").max(72, "Password must be less than 72 characters");
 const nameSchema = z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters");
+const phoneSchema = z.string().trim().regex(/^[0-9]{10,15}$/, "Invalid phone number");
+
+type AuthMethod = 'email' | 'phone';
+type VerificationStep = 'credentials' | 'otp';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [authMethod, setAuthMethod] = useState<AuthMethod>('email');
+  const [verificationStep, setVerificationStep] = useState<VerificationStep>('credentials');
+  
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [otp, setOtp] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
+  
   const [loading, setLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const navigate = useNavigate();
 
-  // Clear any legacy stored passwords on mount (security migration)
+  // Resend cooldown timer
   useEffect(() => {
-    localStorage.removeItem("mindtrack_password");
-    localStorage.removeItem("mindtrack_email");
-    localStorage.removeItem("mindtrack_remember");
-  }, []);
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -52,25 +67,127 @@ const Auth = () => {
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       });
       if (error) throw error;
+      // OAuth will redirect, so no need to handle response here
     } catch (error: any) {
-      toast.error(error.message);
+      console.error('Google login error:', error);
+      toast.error(error.message || "Failed to connect with Google. Please check your connection and try again.");
       setLoading(false);
     }
   };
 
-  const handleAuth = async (e: React.FormEvent) => {
+  const handleSendOTP = async () => {
+    setLoading(true);
+    try {
+      if (authMethod === 'email') {
+        const emailValidation = emailSchema.safeParse(email);
+        if (!emailValidation.success) {
+          toast.error(emailValidation.error.errors[0].message);
+          setLoading(false);
+          return;
+        }
+
+        const { error } = await supabase.auth.signInWithOtp({
+          email: emailValidation.data,
+          options: {
+            shouldCreateUser: !isLogin,
+            data: {
+              full_name: fullName,
+            },
+          },
+        });
+
+        if (error) throw error;
+        
+        setVerificationStep('otp');
+        setResendCooldown(30);
+        toast.success("Verification code sent to your email!");
+      } else {
+        const phoneValidation = phoneSchema.safeParse(phone);
+        if (!phoneValidation.success) {
+          toast.error(phoneValidation.error.errors[0].message);
+          setLoading(false);
+          return;
+        }
+
+        const { error } = await supabase.auth.signInWithOtp({
+          phone: phoneValidation.data,
+          options: {
+            shouldCreateUser: !isLogin,
+            data: {
+              full_name: fullName,
+            },
+          },
+        });
+
+        if (error) throw error;
+        
+        setVerificationStep('otp');
+        setResendCooldown(30);
+        toast.success("6-digit OTP sent to your phone!");
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    setLoading(true);
+    try {
+      if (otp.length !== 6) {
+        toast.error("Please enter the complete 6-digit code");
+        setLoading(false);
+        return;
+      }
+
+      let result;
+      if (authMethod === 'email') {
+        result = await supabase.auth.verifyOtp({
+          email,
+          token: otp,
+          type: 'email',
+        });
+      } else {
+        result = await supabase.auth.verifyOtp({
+          phone,
+          token: otp,
+          type: 'sms',
+        });
+      }
+
+      if (result.error) throw result.error;
+      
+      toast.success(authMethod === 'email' ? "Email verified successfully!" : "Phone verified successfully!");
+      // Navigation will be handled by onAuthStateChange
+    } catch (error: any) {
+      toast.error(error.message || "Invalid code. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    if (resendCooldown > 0) return;
+    await handleSendOTP();
+  };
+
+  const handlePasswordAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Validate inputs
       const emailValidation = emailSchema.safeParse(email);
       if (!emailValidation.success) {
         toast.error(emailValidation.error.errors[0].message);
@@ -110,12 +227,12 @@ const Auth = () => {
             data: {
               full_name: fullName,
             },
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${window.location.origin}/dashboard`,
           },
         });
 
         if (error) throw error;
-        toast.success("Account created! Welcome to MindTrack!");
+        toast.success("Account created! Check your email for verification!");
       }
     } catch (error: any) {
       toast.error(error.message);
@@ -149,101 +266,242 @@ const Auth = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleAuth} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
-                <Input
-                  id="fullName"
-                  placeholder="Enter your name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                />
+          {verificationStep === 'credentials' ? (
+            <>
+              {/* Google Sign In - At the top */}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full gap-2 bg-white hover:bg-gray-50 text-gray-900 border-gray-300"
+                onClick={handleGoogleLogin}
+                disabled={loading}
+              >
+                <svg className="h-5 w-5" viewBox="0 0 24 24">
+                  <path
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    fill="#4285F4"
+                  />
+                  <path
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    fill="#34A853"
+                  />
+                  <path
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                    fill="#FBBC05"
+                  />
+                  <path
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                    fill="#EA4335"
+                  />
+                </svg>
+                Continue with Google
+              </Button>
+
+              <div className="relative my-6">
+                <Separator />
+                <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-xs text-muted-foreground">
+                  OR
+                </span>
               </div>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+
+              {/* Auth Method Selector */}
+              {!isLogin && (
+                <div className="flex gap-2 mb-4">
+                  <Button
+                    type="button"
+                    variant={authMethod === 'email' ? 'default' : 'outline'}
+                    className="flex-1 gap-2"
+                    onClick={() => setAuthMethod('email')}
+                  >
+                    <Mail className="h-4 w-4" />
+                    Email
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={authMethod === 'phone' ? 'default' : 'outline'}
+                    className="flex-1 gap-2"
+                    onClick={() => setAuthMethod('phone')}
+                  >
+                    <Phone className="h-4 w-4" />
+                    Phone
+                  </Button>
+                </div>
+              )}
+
+              <form onSubmit={handlePasswordAuth} className="space-y-4">
+                {!isLogin && (
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <Input
+                      id="fullName"
+                      placeholder="Enter your name"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                    />
+                  </div>
+                )}
+                
+                {authMethod === 'email' ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="+1234567890"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      required
+                    />
+                  </div>
+                )}
+
+                {authMethod === 'email' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                )}
+
+                {isLogin && (
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="remember"
+                      checked={rememberMe}
+                      onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                    />
+                    <label
+                      htmlFor="remember"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Remember my password
+                    </label>
+                  </div>
+                )}
+
+                {authMethod === 'email' ? (
+                  <Button
+                    type="submit"
+                    className="w-full bg-gradient-growth hover:opacity-90"
+                    disabled={loading}
+                  >
+                    {loading ? "Loading..." : isLogin ? "Sign In" : "Create Account"}
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    className="w-full bg-gradient-growth hover:opacity-90"
+                    disabled={loading}
+                    onClick={handleSendOTP}
+                  >
+                    {loading ? "Sending..." : "Send Verification Code"}
+                  </Button>
+                )}
+              </form>
+
+              <div className="mt-6 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsLogin(!isLogin);
+                    setAuthMethod('email');
+                  }}
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {isLogin
+                    ? "Don't have an account? Sign up"
+                    : "Already have an account? Sign in"}
+                </button>
+              </div>
+            </>
+          ) : (
+            /* OTP Verification Step */
+            <div className="space-y-6 animate-scale-in">
+              <div className="text-center space-y-2">
+                <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  {authMethod === 'email' ? (
+                    <Mail className="h-6 w-6 text-primary" />
+                  ) : (
+                    <Phone className="h-6 w-6 text-primary" />
+                  )}
+                </div>
+                <h3 className="font-semibold text-lg">Enter Verification Code</h3>
+                <p className="text-sm text-muted-foreground">
+                  We sent a 6-digit code to {authMethod === 'email' ? email : phone}
+                </p>
+              </div>
+
+              <div className="flex justify-center">
+                <InputOTP
+                  maxLength={6}
+                  value={otp}
+                  onChange={setOtp}
+                  onComplete={handleVerifyOTP}
+                >
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+
+              <Button
+                onClick={handleVerifyOTP}
+                className="w-full bg-gradient-growth hover:opacity-90"
+                disabled={loading || otp.length !== 6}
+              >
+                {loading ? "Verifying..." : "Verify Code"}
+              </Button>
+
+              <div className="text-center space-y-2">
+                <button
+                  type="button"
+                  onClick={handleResendOTP}
+                  disabled={resendCooldown > 0}
+                  className="text-sm text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {resendCooldown > 0
+                    ? `Resend code in ${resendCooldown}s`
+                    : "Resend verification code"}
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVerificationStep('credentials');
+                    setOtp('');
+                  }}
+                  className="block w-full text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Back to login
+                </button>
+              </div>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-              />
-            </div>
-
-
-            <Button
-              type="submit"
-              className="w-full bg-gradient-growth hover:opacity-90"
-              disabled={loading}
-            >
-              {loading ? "Loading..." : isLogin ? "Sign In" : "Create Account"}
-            </Button>
-
-            <div className="relative my-6">
-              <Separator />
-              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-xs text-muted-foreground">
-                OR
-              </span>
-            </div>
-
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full gap-2 bg-white hover:bg-gray-50 text-gray-900 border-gray-300"
-              onClick={handleGoogleLogin}
-              disabled={loading}
-            >
-              <svg className="h-5 w-5" viewBox="0 0 24 24">
-                <path
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  fill="#4285F4"
-                />
-                <path
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  fill="#34A853"
-                />
-                <path
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  fill="#FBBC05"
-                />
-                <path
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  fill="#EA4335"
-                />
-              </svg>
-              Continue with Google
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              {isLogin
-                ? "Don't have an account? Sign up"
-                : "Already have an account? Sign in"}
-            </button>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>
